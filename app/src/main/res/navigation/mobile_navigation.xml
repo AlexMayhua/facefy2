@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_nav_home_to_connectionConfigFragment"
             app:destination="@id/connectionConfigFragment" />
+        <action
+            android:id="@+id/action_nav_home_to_cameraFragment"
+            app:destination="@id/cameraFragment" />
     </fragment>
 
     <fragment
@@ -38,4 +41,10 @@
         android:name="com.example.facefy.ui.connection.ConnectionConfigFragment"
         android:label="Configurar Servidor"
         tools:layout="@layout/fragment_connection_config" />
+
+    <fragment
+        android:id="@+id/cameraFragment"
+        android:name="com.example.facefy.ui.camera.CameraFragment"
+        android:label="Video en Vivo"
+        tools:layout="@layout/fragment_camera" />
 </navigation>

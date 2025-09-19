@@ -42,6 +42,9 @@ class ConnectionRepository(context: Context) {
         initialValue = ConnectionData()
     )
     
+    val faceDetectionData = webSocketManager.faceDetectionData
+    val isStreamingActive = webSocketManager.isStreamingActive
+    
     fun connect() {
         webSocketManager.connect(_serverConfig.value)
     }
@@ -58,6 +61,22 @@ class ConnectionRepository(context: Context) {
     
     fun isConnected(): Boolean {
         return webSocketManager.isConnected()
+    }
+    
+    fun startVideoStream() {
+        webSocketManager.requestVideoStream()
+    }
+    
+    fun stopVideoStream() {
+        webSocketManager.stopVideoStream()
+    }
+    
+    fun startStreaming() {
+        webSocketManager.requestVideoStream()
+    }
+    
+    fun stopStreaming() {
+        webSocketManager.stopVideoStream()
     }
     
     private fun loadServerConfig(): ServerConfig {

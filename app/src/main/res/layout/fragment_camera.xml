@@ -6,13 +6,30 @@
     android:padding="16dp"
     android:background="@color/black">
 
-    <ImageView
-        android:id="@+id/video_image_view"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="@color/black"
-        android:scaleType="centerCrop" />
+        android:layout_weight="1">
+
+        <ImageView
+            android:id="@+id/video_image_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/black"
+            android:scaleType="centerCrop" />
+
+        <TextView
+            android:id="@+id/no_camera_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/black"
+            android:gravity="center"
+            android:text="📷 Sin señal de cámara"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
     <Button
         android:id="@+id/stop_streaming_button"

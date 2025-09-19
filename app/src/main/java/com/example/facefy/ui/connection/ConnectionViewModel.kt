@@ -11,7 +11,10 @@ class ConnectionViewModel(application: Application) : AndroidViewModel(applicati
     
     val connectionData = repository.connectionData
     val connectionStatus = repository.connectionData.map { it.status }
+    val lastConnected = repository.connectionData.map { it.lastConnected }
     val serverConfig = repository.serverConfig
+    val faceDetectionData = repository.faceDetectionData
+    val isStreamingActive = repository.isStreamingActive
     
     fun connect() {
         repository.connect()
@@ -27,5 +30,21 @@ class ConnectionViewModel(application: Application) : AndroidViewModel(applicati
     
     fun isConnected(): Boolean {
         return repository.isConnected()
+    }
+    
+    fun startVideoStream() {
+        repository.startVideoStream()
+    }
+    
+    fun stopVideoStream() {
+        repository.stopVideoStream()
+    }
+    
+    fun startStreaming() {
+        repository.startVideoStream()
+    }
+    
+    fun stopStreaming() {
+        repository.stopVideoStream()
     }
 }

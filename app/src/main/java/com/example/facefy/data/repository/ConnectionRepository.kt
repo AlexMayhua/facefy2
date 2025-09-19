@@ -79,6 +79,10 @@ class ConnectionRepository(context: Context) {
         webSocketManager.stopVideoStream()
     }
     
+    fun isCameraActive(): Boolean {
+        return webSocketManager.isCameraActive()
+    }
+    
     private fun loadServerConfig(): ServerConfig {
         val host = sharedPrefs.getString("server_host", "localhost") ?: "localhost"
         val port = sharedPrefs.getInt("server_port", 8000)

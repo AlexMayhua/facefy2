@@ -10,4 +10,12 @@
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
+
+    <string name="config_server">Configuración del Servidor</string>
+    <string name="server_ip">Dirección IP del Servidor</string>
+    <string name="puerto">Puerto</string>
+    <string name="p_connect">Probar Conexión</string>
+    <string name="cancel">Cancelar</string>
+    <string name="save">Guardar</string>
+
 </resources>

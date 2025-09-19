@@ -26,6 +26,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var connectionViewModel: ConnectionViewModel
+    private var cameraAlertShown = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,7 +62,7 @@ class HomeFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             connectionViewModel.faceDetectionData.collect { data ->
                 data?.let {
-                    updateFaceDetection(it.facesCount)
+                    updateFaceDetection(it.facesCount, connectionViewModel.isCameraActive())
                 }
             }
         }
@@ -69,6 +70,16 @@ class HomeFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             connectionViewModel.isStreamingActive.collect { isStreaming ->
                 updateVideoButton(isStreaming)
+            }
+        }
+        
+        viewLifecycleOwner.lifecycleScope.launch {
+            while (true) {
+                if (connectionViewModel.isConnected()) {
+                    val currentData = connectionViewModel.faceDetectionData.value
+                    updateFaceDetection(currentData.facesCount, connectionViewModel.isCameraActive())
+                }
+                kotlinx.coroutines.delay(2000)
             }
         }
     }
@@ -156,8 +167,32 @@ class HomeFragment : Fragment() {
         }
     }
     
-    private fun updateFaceDetection(facesCount: Int) {
-        binding.textFacesCount.text = facesCount.toString()
+    private fun updateFaceDetection(facesCount: Int, isCameraActive: Boolean) {
+        if (!isCameraActive) {
+            binding.textFacesCount.text = "Sin cámara"
+            if (!cameraAlertShown) {
+                showCameraAlert()
+            }
+        } else {
+            binding.textFacesCount.text = facesCount.toString()
+            cameraAlertShown = false
+        }
+    }
+    
+    private fun showCameraAlert() {
+        if (connectionViewModel.isConnected()) {
+            cameraAlertShown = true
+            AlertDialog.Builder(requireContext())
+                .setTitle("⚠️ Cámara Inactiva")
+                .setMessage("No se detecta actividad de cámara. Asegúrese de que el cliente Python esté ejecutándose y la cámara esté conectada.")
+                .setPositiveButton("Entendido") { _, _ ->
+                    cameraAlertShown = false
+                }
+                .setOnDismissListener {
+                    cameraAlertShown = false
+                }
+                .show()
+        }
     }
     
     private fun updateVideoButton(isStreaming: Boolean) {

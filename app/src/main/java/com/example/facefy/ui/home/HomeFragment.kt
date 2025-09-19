@@ -7,13 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.facefy.R
 import com.example.facefy.data.models.ConnectionStatus
 import com.example.facefy.databinding.FragmentHomeBinding
 import com.example.facefy.ui.connection.ConnectionViewModel
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -23,8 +24,8 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    
-    private val connectionViewModel: ConnectionViewModel by activityViewModels()
+
+    private lateinit var connectionViewModel: ConnectionViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,25 +35,40 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
-    
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        setupObservers()
+        connectionViewModel = ViewModelProvider(requireActivity())[ConnectionViewModel::class.java]
+        
         setupButtons()
+        observeConnectionData()
     }
     
-    private fun setupObservers() {
+    private fun observeConnectionData() {
         viewLifecycleOwner.lifecycleScope.launch {
-            connectionViewModel.connectionData.collect { data ->
-                updateConnectionStatus(data.status)
-                updateLastConnected(data.lastConnected)
-                data.errorMessage?.let { 
-                    binding.textError.text = it
-                    binding.textError.visibility = View.VISIBLE
-                } ?: run {
-                    binding.textError.visibility = View.GONE
+            connectionViewModel.connectionStatus.collect { status ->
+                updateConnectionStatus(status)
+            }
+        }
+        
+        viewLifecycleOwner.lifecycleScope.launch {
+            connectionViewModel.lastConnected.collect { timestamp ->
+                updateLastConnected(timestamp)
+            }
+        }
+        
+        viewLifecycleOwner.lifecycleScope.launch {
+            connectionViewModel.faceDetectionData.collect { data ->
+                data?.let {
+                    updateFaceDetection(it.facesCount)
                 }
+            }
+        }
+        
+        viewLifecycleOwner.lifecycleScope.launch {
+            connectionViewModel.isStreamingActive.collect { isStreaming ->
+                updateVideoButton(isStreaming)
             }
         }
     }
@@ -69,8 +85,17 @@ class HomeFragment : Fragment() {
         binding.buttonConfigure.setOnClickListener {
             findNavController().navigate(R.id.action_nav_home_to_connectionConfigFragment)
         }
+        
+        binding.buttonLiveVideo.setOnClickListener {
+            if (connectionViewModel.isStreamingActive.value) {
+                connectionViewModel.stopStreaming()
+            } else {
+                connectionViewModel.startStreaming()
+                findNavController().navigate(R.id.action_nav_home_to_cameraFragment)
+            }
+        }
     }
-    
+
     private fun updateConnectionStatus(status: ConnectionStatus) {
         when (status) {
             ConnectionStatus.CONNECTED -> {
@@ -82,6 +107,8 @@ class HomeFragment : Fragment() {
                 binding.viewStatusIndicator.setBackgroundColor(
                     ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
                 )
+                binding.layoutFaceDetection.visibility = View.VISIBLE
+                binding.buttonLiveVideo.visibility = View.VISIBLE
             }
             ConnectionStatus.CONNECTING -> {
                 binding.textConnectionStatus.text = "CONECTANDO..."
@@ -102,6 +129,8 @@ class HomeFragment : Fragment() {
                 binding.viewStatusIndicator.setBackgroundColor(
                     ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark)
                 )
+                binding.layoutFaceDetection.visibility = View.GONE
+                binding.buttonLiveVideo.visibility = View.GONE
             }
             ConnectionStatus.ERROR -> {
                 binding.textConnectionStatus.text = "ERROR"
@@ -113,7 +142,8 @@ class HomeFragment : Fragment() {
                     ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark)
                 )
             }
-            else -> {}
+
+            ConnectionStatus.RECONNECTING -> TODO()
         }
     }
     
@@ -123,6 +153,18 @@ class HomeFragment : Fragment() {
             binding.textLastConnected.text = "Última conexión: ${dateFormat.format(Date(timestamp))}"
         } else {
             binding.textLastConnected.text = "Sin conexiones previas"
+        }
+    }
+    
+    private fun updateFaceDetection(facesCount: Int) {
+        binding.textFacesCount.text = facesCount.toString()
+    }
+    
+    private fun updateVideoButton(isStreaming: Boolean) {
+        binding.buttonLiveVideo.text = if (isStreaming) {
+            "🔴 STREAMING ACTIVO"
+        } else {
+            "📹 VER VIDEO EN VIVO"
         }
     }
     

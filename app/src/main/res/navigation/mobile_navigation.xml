@@ -32,4 +32,10 @@
         android:name="com.example.facefy.ui.connection.ConnectionConfigFragment"
         android:label="Configuración del Servidor"
         tools:layout="@layout/fragment_connection_config" />
+
+    <fragment
+        android:id="@+id/nav_server_config"
+        android:name="com.example.facefy.ui.connection.ConnectionConfigFragment"
+        android:label="Configurar Servidor"
+        tools:layout="@layout/fragment_connection_config" />
 </navigation>

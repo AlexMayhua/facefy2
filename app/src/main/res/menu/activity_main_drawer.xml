@@ -17,4 +17,13 @@
             android:icon="@drawable/ic_menu_slideshow"
             android:title="@string/menu_slideshow" />
     </group>
+
+    <item android:title="Configuración">
+        <menu>
+            <item
+                android:id="@+id/nav_server_config"
+                android:icon="@drawable/ic_server_config"
+                android:title="Configurar Servidor" />
+        </menu>
+    </item>
 </menu>

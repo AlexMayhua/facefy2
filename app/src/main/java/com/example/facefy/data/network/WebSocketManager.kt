@@ -26,6 +26,9 @@ class WebSocketManager {
     private val _isStreamingActive = MutableStateFlow(false)
     val isStreamingActive: StateFlow<Boolean> = _isStreamingActive
 
+    private val _lastMessageTime = MutableStateFlow(0L)
+    private val cameraTimeoutMs = 5000L
+
     fun connect(serverConfig: ServerConfig) {
         if (_connectionStatus.value == ConnectionStatus.CONNECTED) {
             return
@@ -69,6 +72,7 @@ class WebSocketManager {
         _connectionStatus.value = ConnectionStatus.DISCONNECTED
         _errorMessage.value = null
         _isStreamingActive.value = false
+        _lastMessageTime.value = 0L
     }
     
     fun isConnected(): Boolean {
@@ -92,15 +96,18 @@ class WebSocketManager {
     private fun processMessage(message: String) {
         try {
             val jsonMap = gson.fromJson(message, Map::class.java)
+            val currentTime = System.currentTimeMillis()
+            _lastMessageTime.value = currentTime
             
             when (jsonMap["num_faces"] != null) {
                 true -> {
                     val facesCount = (jsonMap["num_faces"] as Double).toInt()
                     _faceDetectionData.value = FaceDetectionData(
                         facesCount = facesCount,
-                        timestamp = System.currentTimeMillis(),
+                        timestamp = currentTime,
                         videoFrame = jsonMap["video_frame"] as? String,
-                        isStreaming = _isStreamingActive.value
+                        isStreaming = _isStreamingActive.value,
+                        isCameraActive = true
                     )
                 }
                 false -> {
@@ -108,7 +115,12 @@ class WebSocketManager {
                 }
             }
         } catch (e: Exception) {
-            _errorMessage.value = "Error procesando mensaje: ${e.message}"
+            _errorMessage.value = "Error procesando mensaje"
         }
+    }
+    
+    fun isCameraActive(): Boolean {
+        val timeSinceLastMessage = System.currentTimeMillis() - _lastMessageTime.value
+        return timeSinceLastMessage < cameraTimeoutMs && _connectionStatus.value == ConnectionStatus.CONNECTED
     }
 }

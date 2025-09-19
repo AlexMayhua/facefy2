@@ -47,4 +47,8 @@ class ConnectionViewModel(application: Application) : AndroidViewModel(applicati
     fun stopStreaming() {
         repository.stopVideoStream()
     }
+    
+    fun isCameraActive(): Boolean {
+        return repository.isCameraActive()
+    }
 }
